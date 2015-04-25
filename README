@@ -1,0 +1,77 @@
+								
+						Proiect Sah - PA - Etapa a III-a
+
+	Echipa este formata din:
+	- Ghita Alexandra Stefania 324CA
+	- Manica Vlad Bogdan 324CA
+	- Zapuc Alexandra 325CA
+	- Tomulescu Cosmin 324CA
+
+	Am pornit de la cateva functii implementate la etapa precedenta precum:
+	
+	*en passant - se verifica daca adversarul a facut o mutare de en passant 
+				atunci stergem pionul din reprezentarea noastra interna.
+	*pawn promotion - daca un pion ajuge pe prima sau ultima linie, atunci 
+				acesta este promovat in regina
+	*castling - daca jucatorul advers apeleaza la rocada mica sau rocada mare, 
+				este actualizata tabla de sah.
+	*3_mutari_identice - daca ambii jucatori fac 3 mutari identice, atunci se 
+				declara remiza.
+	*isCheck - verifica daca regele de pe pozitia x y este in sah
+	*KingToKing - verifica daca regele se apropie de regele advers la mai putin
+				de o patratica
+	*setMove - face o mutare pe tabla de sah (board).
+	*takeBackMove - intoarce o mutare pe tabla (undo), avand pozitia curenta,
+				pozitia precedenta si piesa care era inainte pe tabla.
+
+	Am construit un arbore de stari reprezentand situatia actuala a pieselor pe 
+	tabla iar muchiile reprezinta posibile mutari (le-am generate pe toate).
+	Noi suntem MAX de fiecare data, si alegem cea mai buna mutare de la nivelul
+	urmator (maximizand castigul), iar adversarul nostru este MIN, si
+	presupunem ca va alege cea mai buna mutare pentru el, deci cea mai proasta
+	mutare pentru noi, incercand sa minimizeze pierderea.
+	Am implementat algoritmul MINIMAX si l-am optimizat cu taieri Alpha-Beta. 
+
+
+	Implementare:
+	
+	Functia generate_all ne genereaza toate posibilele mutari pe care le poate
+		face un anumit jucator (am facut discutie dupa side. Ca optimizare am
+		adaugat mutarile care luau piese in fata listei, iar cele care nu luau 
+		la coada. Acest lucru se va dovedi util cand daca observam ca ramanem
+		fara timp si vrem sa iesim fortat din cautare, luand cea mai buna mutare
+		de pana atunci. Acest lucru nu este inca implementat, neconstituind 
+		obiectivul acestei etape. 
+	
+	Functiile maxi si mini construiesc arborele MINIMAX.	
+		Atat maxi cat si mini primesc o adancime pana la care sa mearga,
+		returneaza un cost, si un nod cu prima mutare pe care trebuie s-o faca 
+		pentru a obtine cea mai buna mutare calculata de el.
+		Parametrii Alpha si Beta sunt folositi pentru taieri Alpha-Beta.
+		In maxi, daca gasim un cost mai mare la parinte decat are beta, ne 
+		oprim, analog in mini, daca gasim un cost mai mic la parinte decat are 
+		alpha, ne oprim.
+		
+	Am folosit o functie de evaluare care ne calculeaza situatia actuala a 
+		tablei din persectiva engine-ului. Valoarea rezultata este data de valoarea
+		materiala a pieselor engine-ului insumat cu bonus, din care se scade valoarea 
+		materiala a pieselor adversarului insumat cu bonus. Cu alte cuvinte, functia 
+		de evaluare estimeaza posibilitatea de castig.
+	
+Concluzii si testare:
+-In cazul in care engine-ul nu gaseste la un anumit nivel o posibila mutare 
+	pentru care sa nu fie in sah, atunci lista noastra de posibile mutari va
+	fi vida si vom returna infinit sau -infinit in functie de side. In cazul 
+	in care nu avem ce mutare sa returnam Winboard-ului verificam daca suntem
+	in sah inseamna ca este mat si dam resign, daca nu inseamna ca este pat deci remiza.
+-Am intampinat mici probleme cu eliberarea de memorie. 
+-Am observat ca pentru o adancime de 5 a arborelui, se pot face initial cam 
+	24 de milione de posibile mutari, dintre care noi facem 4000-5000 de taieri 
+	alpha-beta, ceea ce ne reduce considerabil numarul cazurilor pe care le tratam.
+-Totodata am observat ca o adancime de 5 nivele nu pune mari probleme engine-ului,
+	el miscandu-se chiar repejor. 
+-Am constatat un comportament diferit in momentul in care am setat sa joace contra lui.
+-A fost foarte placut sa vedem cum evoluaza de la fraier la nemernic! :)
+
+Codul l-am scris in MinGW, pe Windows. Makefile-ul in schimb l-am facut pentru Linux.
+
